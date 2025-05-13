@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using survey_api.Data;
 using survey_api.Entities;
 
@@ -13,25 +16,40 @@ namespace survey_api.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Survey>> GetAllAsync()
+        public async Task<List<Surveys>> GetAllAsync()
         {
             return await _context.Surveys.ToListAsync();
         }
 
-        public async Task<Survey> GetByIdAsync(int id)
+
+        public async Task<Surveys> GetByIdAsync(int id)
         {
             return await _context.Surveys.FindAsync(id);
         }
 
-        public async Task<Survey> CreateAsync(Survey survey)
+        public async Task<Surveys> CreateAsync()
         {
-            await _context.Surveys.AddAsync(survey);
+            Surveys newSurvey = new Surveys();
+            newSurvey.SubmitTime = DateTime.UtcNow;
+            newSurvey.Status = "New";
+
+            newSurvey.CreatedAt = DateTime.UtcNow;
+            newSurvey.CreatedBy = "System";
+
+            _context.Surveys.Add(newSurvey);
             await _context.SaveChangesAsync();
-            return survey;
+
+            return newSurvey;
         }
 
-        public async Task<Survey> UpdateAsync(Survey survey)
+        public async Task<Surveys> UpdateAsync(Surveys survey)
         {
+            Surveys updateSurvey = new Surveys();
+            updateSurvey.SubmitTime = DateTime.UtcNow;
+
+            updateSurvey.ModifiedAt = DateTime.UtcNow;
+            updateSurvey.ModifiedBy = "System";
+
             _context.Surveys.Update(survey);
             await _context.SaveChangesAsync();
             return survey;
@@ -39,19 +57,12 @@ namespace survey_api.Services
 
         public async Task DeleteAsync(int id)
         {
-            var survey = await GetByIdAsync(id);
+            Surveys survey = await GetByIdAsync(id);
             if (survey != null)
             {
                 _context.Surveys.Remove(survey);
                 await _context.SaveChangesAsync();
             }
-        }
-
-        public async Task<IEnumerable<Survey>> GetActiveSurveysAsync()
-        {
-            return await _context.Surveys
-                .Where(s => s.IsActive)
-                .ToListAsync();
         }
     }
 } 

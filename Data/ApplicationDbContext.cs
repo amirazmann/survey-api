@@ -12,15 +12,21 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-        
-        // Configure relationships
         modelBuilder.Entity<SurveyAnswers>()
             .HasOne(sa => sa.Surveys)
             .WithMany()
             .HasForeignKey(sa => sa.SurveyId)
-            .HasForeignKey(sa => sa.SurveyQuestionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SurveyAnswers>()
+            .HasOne(sa => sa.SurveyQuestions)
+            .WithMany()
+            .HasForeignKey(sa => sa.SurveyQuestionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+
+        base.OnModelCreating(modelBuilder);
+        
     }
     public DbSet<Surveys> Surveys { get; set; }
     public DbSet<SurveyQuestions> SurveyQuestions { get; set; }
